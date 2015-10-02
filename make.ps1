@@ -79,69 +79,6 @@ function build{
     } 
 }
 
-function test{
-    # TESTING
-    write-host "Testing"  -foregroundcolor:blue
-
-    $trxPath = "$basePath\TestOutput\AllTest.trx"
-    $resultFile="/resultsfile:$trxPath"
-
-    $testDLLs = get-childitem -path "$basePath\TestOutput\*.*" -include "*Tests.dll"
-     
-    $arguments = " /testcontainer:" + $testDLLs + " /TestSettings:$basePath\src\$projectName\LocalTestRun.testrunconfig"
-
-    Invoke-Expression "mstest $resultFile $arguments > $logPath\LogTest.log"
-
-    $content = (Get-Content -Path "$logPath\LogTest.log")
-    $passedContent = ($content -match "Passed")
-    if($passedContent.Count -eq 0)
-    {    
-        Write-host "TESTING FAILED!" -foregroundcolor:red
-        $lastResult = $false
-    }
-    $failedContent = ($content -match "Failed")
-    $failedCount = $failedContent.Count
-    if($failedCount -gt 0)
-    {    
-        Write-host "TESTING FAILED!" -foregroundcolor:red
-        $lastResult = $false
-    }
-    Foreach ($line in $failedContent) 
-    {
-        write-host $line -foregroundcolor:red
-    }
-    $failedContent = ($content -match "Not Runnable")
-    $failedCount = $failedContent.Count
-    if($failedCount -gt 0)
-    {    
-        Write-host "TESTING FAILED!" -foregroundcolor:red
-        $lastResult = $false
-    }
-    Foreach ($line in $failedContent) 
-    {
-        write-host $line -foregroundcolor:red
-    }
-
-    if($lastResult -eq $False){    
-        exit
-    }
-}
-
-function document{
-    # DOCUMENTING
-    Write-Host "Documenting" -foregroundcolor:blue
-    Invoke-expression "./src/buildoutput/tdg.exe -i '.\src\templates\README.template.md' -o './README.md'"
-    if($? -eq $False){
-        Write-host "DOCUMENT FAILED!"  -foregroundcolor:red
-        exit
-    }
-    Invoke-expression "./src/buildoutput/tdg.exe -i '.\src\templates\README.template.md' -o '.\src\buildoutput\README.txt'"    
-    if($? -eq $False){
-        Write-host "DOCUMENT FAILED!"  -foregroundcolor:red
-        exit
-    }
-}
-
 function nugetPublish{
     # DEPLOYING
     write-host "Publishing Nuget package" -foregroundcolor:blue
@@ -182,6 +119,7 @@ if($buildType -eq "clean"){
 }
 
 if($buildType -eq "publish"){
+    $buildType = "Release"
     clean
     build     
     zipOutput
