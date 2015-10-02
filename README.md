@@ -1,7 +1,7 @@
 
 #locr
 
-[<img src="https://img.shields.io/appveyor/ci/secretdeveloper/locr/master.svg">](https://ci.appveyor.com/project/SecretDeveloper/cliparse)
+[<img src="https://img.shields.io/appveyor/ci/secretdeveloper/locr/master.svg">](https://ci.appveyor.com/project/SecretDeveloper/locr)
 [<img src="https://img.shields.io/nuget/dt/locr.svg">](https://www.nuget.org/packages/locr/)
 
 Counts the number of lines and blanks per single file or directory.
