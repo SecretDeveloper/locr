@@ -23,9 +23,9 @@ function clean{
         mkdir "$basePath\releases\"
     }    
     remove-item $basePath\BuildOutput\* -recurse
-    remove-item $basePath\TestOutput\* -recurse
-    
+    remove-item $basePath\TestOutput\* -recurse    
     remove-item $logPath\* -recurse
+    
     $lastResult = $true
 }
 
@@ -182,8 +182,6 @@ if($buildType -eq "clean"){
 }
 
 if($buildType -eq "publish"){
-    $buildType="Release"
-
     clean
     build     
     zipOutput

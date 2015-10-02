@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
-namespace locrlib
+namespace locr.lib
 {
     /// <summary>
     /// public API for locr functionality.
@@ -12,8 +13,8 @@ namespace locrlib
     // ReSharper disable once InconsistentNaming
     public static class locr
     {
-        private const string _template = @"locr
-{dirsummary}
+        private const string _template = @"locr {version}
+---------------------------------------------------------------------------------------------------
 {perf}
 ---------------------------------------------------------------------------------------------------
 {tableheader}
@@ -79,24 +80,21 @@ namespace locrlib
                 
                 while(current != -1)
                 {
-                    //if (result.IsText && current < 32) result.IsText = false; // check for binary files.
-                    if (current == lineFeed || current == carriageReturn)
+                    // mac
+                    if (lastByte == carriageReturn && current== carriageReturn) result.Blanks++;
+                    // unix
+                    if (lastByte == lineFeed && current == lineFeed) result.Blanks++;
+                    // windows
+                    if (lastlastByte == carriageReturn && lastByte == lineFeed && current == carriageReturn) result.Blanks++;
+                    
+                    if ((lastByte!=carriageReturn && current == lineFeed) || current == carriageReturn)
                     {
-                        if ((lastlastByte==-1 || lastlastByte == carriageReturn) && (lastByte == -1 || lastByte == lineFeed))
-                        {
-                            result.Blanks++;
-                        }
-
                         result.Lines++;
-
-                        if (current == lineFeed && lastByte == carriageReturn)
-                        {
-                            result.Lines--; // windows uses 2 characters for newlines (CRLF), we already counted the CR so decrement now.
-                        }
                     }
                     
                     lastlastByte = lastByte;
                     lastByte = current;
+                    result.Bytes ++;
                     current = stream.ReadByte();
                 }
             }
@@ -109,34 +107,36 @@ namespace locrlib
         
         private static string ListResultsToString(List<AnalysisResult> list, AnalysisOptions options, Stopwatch sw)
         {
+            var padTotalWidth = 25;
             SortedDictionary<string, AnalysisResult> dict = MergeResults(list, options);
 
             var message = _template;
 
-            if (list.Count > 1) message = message.Replace("{dirsummary}", "");
-            message = message.Replace("{dirsummary}", "");
+            message = message.Replace("{version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-            message = message.Replace("{tableheader}", PadToLength("Extension", 30)+PadToLength("Lines", 30)+PadToLength("Blanks", 30));
+            message = message.Replace("{tableheader}", PadToLength("Extension", padTotalWidth) + PadToLength("Lines", padTotalWidth) + PadToLength("Blanks", padTotalWidth) + PadToLength("Bytes", padTotalWidth));
 
             decimal filesPerSecond = (Convert.ToDecimal(list.Count) / Convert.ToDecimal(sw.ElapsedMilliseconds)) * 1000M;
             filesPerSecond = Math.Floor(filesPerSecond);
 
             message = message.Replace("{perf}",
-                string.Format("{0} files scanned in {1}ms, ({2} files/sec)", list.Count.ToString(), sw.ElapsedMilliseconds, filesPerSecond));
+                string.Format("{0} files scanned in {1}ms, ({2} files/sec)", list.Count, sw.ElapsedMilliseconds, filesPerSecond));
 
             var lines = 0;
             var blanks = 0;
+            var bytes = 0L;
 
             var sb = new StringBuilder();
             foreach (var analysisResult in dict.Values)
             {
                 lines += analysisResult.Lines;
                 blanks += analysisResult.Blanks;
+                bytes += Convert.ToInt64(analysisResult.Bytes);
                 sb.AppendLine(analysisResult.ToString());
             }
             message = message.Replace("{table}", sb.ToString());
 
-            message = message.Replace("{summary}", string.Format("{0}{1}{2}", PadToLength("Summary:", 30),PadToLength(lines.ToString(), 30), PadToLength(blanks.ToString(), 30)));
+            message = message.Replace("{summary}", string.Format("{0}{1}{2}{3}", PadToLength("Total:", padTotalWidth), PadToLength(lines.ToString(), padTotalWidth), PadToLength(blanks.ToString(), padTotalWidth), PadToLength(bytes.ToString(), padTotalWidth)));
 
             return message;
         }
@@ -193,7 +193,7 @@ namespace locrlib
 
         public override string ToString()
         {
-            return string.Format("{0}{1}{2}", locr.PadToLength(this.Extension,30), locr.PadToLength(this.Lines.ToString(), 30), locr.PadToLength(this.Blanks.ToString(), 30), this.IsText);
+            return string.Format("{0}{1}{2}{3}", locr.PadToLength(this.Extension, 25), locr.PadToLength(this.Lines.ToString(), 25), locr.PadToLength(this.Blanks.ToString(), 25), locr.PadToLength(this.Bytes.ToString(), 25));
         }
 
         public void Merge(AnalysisResult right)

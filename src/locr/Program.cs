@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace locr
 {
@@ -17,7 +13,7 @@ namespace locr
                 Debugger.Launch();
 #endif
                 var path = args[0];
-                var result = locrlib.locr.Analyse(path);
+                var result = lib.locr.Analyse(path);
                 Console.WriteLine(result);
             }
             catch (Exception ex)
