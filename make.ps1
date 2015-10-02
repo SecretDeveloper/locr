@@ -120,6 +120,7 @@ if($buildType -eq "clean"){
 
 if($buildType -eq "publish"){
     $buildType = "Release"
+
     clean
     build     
     zipOutput
@@ -135,8 +136,6 @@ if($buildType -eq "debug"){
 
     clean
     build    
-    zipOutput
-    nugetPack   
 
 Write-Host Finished -foregroundcolor:blue
 
