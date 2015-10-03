@@ -46,6 +46,7 @@ TestOutput/
 BuildOutput/
 releases/
 _Resharper*/
+**/node_modules/
 
 #NUGET
 ######################
