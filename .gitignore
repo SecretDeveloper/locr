@@ -45,6 +45,15 @@ TestResults/
 TestOutput/
 BuildOutput/
 releases/
-packages/
 _Resharper*/
-#.nuget
+
+#NUGET
+######################
+# Ignore NuGet Packages
+*.nupkg
+# Ignore the packages folder
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config
