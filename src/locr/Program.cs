@@ -15,6 +15,7 @@ namespace locr
 #if DEBUG
                 Debugger.Launch();
 #endif
+
                 var options = new AnalysisOptions();
                 var result = options.CliParse(args);
                 if (result.Successful == false || result.ShowHelp)
@@ -23,19 +24,53 @@ namespace locr
                     {
                         Console.WriteLine(message);
                     }
-                    
-                    
                     Console.WriteLine(options.GetHelpInfo());
                     return;
                 }
 
-                var analyis = lib.locr.Analyse(options);
-                Console.WriteLine(analyis);
+                var analysis = new lib.locr();
+
+                if(!options.Quiet)
+                    analysis.OnStatusUpdate += analysis_OnStatusUpdate;
+
+                var screen = analysis.Analyse(options);
+
+                // reset screen update line
+                Console.Write("\r                                                                                                       ");
+                Console.Write("\r");
+
+                Console.WriteLine(screen);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        static void analysis_OnStatusUpdate(object sender, EventArgs e)
+        {
+            var args = e as AnalysisEventArgs; 
+            if (args == null) return;
+            
+            const int maxLength = 100;
+            var message = GetMessage(args.Prefix, args.Message, maxLength);
+            
+            Console.Write("\r"+message);
+        }
+
+        private static string GetMessage(string prefix, string message, int length)
+        {
+            var p = prefix ?? "";
+            var allowableMessageLenth = length - p.Length;
+
+            var m = message ?? "";
+
+            if (m.Length > allowableMessageLenth)
+                m = m.Substring(m.Length - allowableMessageLenth);
+
+            m = (p + m).PadRight(length);
+
+            return m;
         }
     }
 }

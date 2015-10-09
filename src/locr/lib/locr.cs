@@ -9,9 +9,12 @@ namespace locr.lib
     /// public API for locr functionality.
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    public static class locr
+    public class locr
     {
-        public static string Analyse(AnalysisOptions options)
+
+        public event EventHandler OnStatusUpdate;
+
+        public string Analyse(AnalysisOptions options)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -33,18 +36,31 @@ namespace locr.lib
             return analysisResult.ToString();
         }
         
-        private static AnalysisResult AnalyseDirectory(string path, AnalysisOptions options)
+        private AnalysisResult AnalyseDirectory(string path, AnalysisOptions options)
         {
             var analysisResult = new AnalysisResult();
+            UpdateStatus("Analysing directory:", path);
+            
             analysisResult.Path = path;
             foreach (var item in Directory.EnumerateFiles(path))
             {
                 analysisResult.TotalFileCount++;
-                analysisResult.Add(AnalyseFile(item, options));
+                var analysis = AnalyseFile(item, options);
+                if (!analysis.Scanned)
+                {
+                    analysisResult.IgnoredFileCount++;
+                    continue;
+                }
+                analysisResult.Add(analysis);
             }
 
             foreach (var item in Directory.EnumerateDirectories(path))
             {
+                if (!options.ShouldScanDirectory(item))
+                {
+                    UpdateStatus("Skipping directory:", item);
+                    continue;
+                }
                 var directoryAnalysis = AnalyseDirectory(item, options);
                 analysisResult.Merge(directoryAnalysis);
             }
@@ -52,9 +68,18 @@ namespace locr.lib
             return analysisResult;
         }
 
-        private static AnalysisFileResult AnalyseFile(string filePath, AnalysisOptions options)
+        private AnalysisFileResult AnalyseFile(string filePath, AnalysisOptions options)
         {
             var result = new AnalysisFileResult();
+            if (!options.ShouldScanFile(filePath))
+            {
+                UpdateStatus("Skipping file:", filePath);
+                result.Scanned = false; // marked as skipped file
+                return result;
+            }
+
+            UpdateStatus("Analysing file:", filePath);
+            
             result.Extension = Path.GetExtension(filePath) ?? "";
             result.Extension = result.Extension.ToLowerInvariant();
             if (result.Extension.Length == 0) result.Extension = "(blank)";
@@ -94,6 +119,13 @@ namespace locr.lib
             if (!(lastByte == lineFeed || lastByte == carriageReturn) && result.Lines > 0) result.Lines++;
 
             return result;
+        }
+
+        private void UpdateStatus(string prefix, string message)
+        {
+            if (OnStatusUpdate == null) return;
+
+            OnStatusUpdate(this, new AnalysisEventArgs(){Message = message, Prefix = prefix});
         }
     }
 }

@@ -38,22 +38,27 @@ namespace locr.lib
         public void Add(AnalysisFileResult fileResult)
         {
             if(fileResult == null) throw new ArgumentNullException("fileResult");
-
-            if (FileResults.ContainsKey(fileResult.Extension))
+            if (fileResult.Scanned)
             {
-                var result = FileResults[fileResult.Extension];
-                result.Merge(fileResult);
-                result.FileCount++; // increment number of files for this extension.
+                if (FileResults.ContainsKey(fileResult.Extension))
+                {
+                    var result = FileResults[fileResult.Extension];
+                    result.Merge(fileResult);
+                    result.FileCount++; // increment number of files for this extension.
+                }
+                else
+                    FileResults[fileResult.Extension] = (fileResult);
+
+                if (!fileResult.IsText) this.BinaryFileCount++;
+
+                this.TotalLines += fileResult.Lines;
+                this.TotalBytes += fileResult.Bytes;
+                this.TotalBlanks += fileResult.Blanks;
             }
             else
-                FileResults[fileResult.Extension] = (fileResult);
-            
-            if (!fileResult.IsText) this.BinaryFileCount++;
-            if (!fileResult.Scanned) this.IgnoredFileCount++;
-
-            this.TotalLines += fileResult.Lines;
-            this.TotalBytes += fileResult.Bytes;
-            this.TotalBlanks += fileResult.Blanks;
+            {
+                this.IgnoredFileCount++;
+            }
         }
 
         public void Merge(AnalysisResult analyseDirectory)
@@ -103,8 +108,8 @@ namespace locr.lib
             message = message.Replace("{version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
             var dirdetails = "Scanning: " + this.Path;
-            
-            message = message.Replace("{dirdetails}", string.Format("Scanning: "+this.Path+"\nFiles:{0}\nDirectories:{1}\nIgnored:{2}", this.TotalFileCount, this.TotalDirectoryCount, this.IgnoredFileCount));
+
+            message = message.Replace("{dirdetails}", string.Format("Scanning: " + this.Path + "\nDirectories:{1}\nScanned Files:{0}\nIgnoredFiles:{2}", this.TotalFileCount, this.TotalDirectoryCount, this.IgnoredFileCount));
 
             message = message.Replace("{tableheader}"
                 , PadToLength("Extension", padTotalWidth)

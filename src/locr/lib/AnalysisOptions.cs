@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace locr.lib
 {
@@ -9,11 +12,22 @@ namespace locr.lib
         [CliParse.ParsableArgument('p', "path", Required = true)]
         public string Path { get; set; }
 
-        [CliParse.ParsableArgument('m', "match", Description = "Only files matched by the supplied regular expression will be scanned")]
+        [CliParse.ParsableArgument('m', "match", DefaultValue = "", Description = "Only files matched by the supplied regular expression will be scanned")]
         public string FileMatch { get; set; }
+
+        private string fileInclude;
+        [CliParse.ParsableArgument('i', "include", DefaultValue = "", Description = "Only files include files that pass wildcard search e.g. *.cs")]
+        public string FileInclude
+        {
+            get { return fileInclude; }
+            set { fileInclude = WildcardToRegex(value); }
+        }
 
         [CliParse.ParsableArgument('d', "matchdir", Description = "Only directories matched by the supplied regular expression will be scanned")]
         public string DirectoryMatch { get; set; }
+
+        [CliParse.ParsableArgument('q', "quiet", DefaultValue = false, Description = "Less chatty output.")]
+        public bool Quiet { get; set; }
 
 
         public Dictionary<string, AnalysisFileResult> Sort(Dictionary<string, AnalysisFileResult> sortable)
@@ -21,14 +35,35 @@ namespace locr.lib
             return sortable.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
         }
 
-        public bool ShouldScanDirectory(string path)
+        public static string WildcardToRegex(string pattern)
         {
-            return true;
+            return "^" + pattern.Replace("*",".*") + "$";
         }
 
-        public bool ShouldScanFile(string path)
+        public bool ShouldScanDirectory(string directoryPath)
         {
-            return true;
+            if (string.IsNullOrEmpty(DirectoryMatch)) return true;
+
+            var directoryName = System.IO.Path.GetDirectoryName(directoryPath);
+            if (string.IsNullOrEmpty(directoryName)) return true;
+
+            return Regex.IsMatch(directoryName, DirectoryMatch);
+        }
+
+        public bool ShouldScanFile(string filePath)
+        {
+            if (string.IsNullOrEmpty(FileMatch) && string.IsNullOrEmpty(FileInclude)) return true;
+
+            var filename = System.IO.Path.GetFileName(filePath);
+            if (string.IsNullOrEmpty(filename)) return true;
+
+            if (!string.IsNullOrEmpty(FileMatch) && Regex.IsMatch(filename, FileMatch))
+                return true;
+
+            if (!string.IsNullOrEmpty(FileInclude) && Regex.IsMatch(filename, FileInclude))
+                return true;
+
+            return false;
         }
     }
 }
