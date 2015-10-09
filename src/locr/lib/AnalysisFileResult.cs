@@ -38,9 +38,12 @@
 
         public void Merge(AnalysisFileResult right)
         {
-            this.Bytes += right.Bytes;
-            this.Lines += right.Lines;
-            this.Blanks += right.Blanks;
+            if (right.Scanned)
+            {
+                this.Bytes += right.Bytes;
+                this.Lines += right.Lines;
+                this.Blanks += right.Blanks;
+            }
         }
     }
 }

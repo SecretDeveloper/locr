@@ -1,4 +1,5 @@
 ﻿using System;
+using locr.lib;
 
 namespace locr
 {
@@ -6,6 +7,7 @@ namespace locr
     {
         public string Prefix { get; set; }
         public string Message { get; set; }
+        public AnalysisOptions Options { get; set; }
 
     }
 }

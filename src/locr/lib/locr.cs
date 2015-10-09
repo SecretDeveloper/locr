@@ -39,30 +39,28 @@ namespace locr.lib
         private AnalysisResult AnalyseDirectory(string path, AnalysisOptions options)
         {
             var analysisResult = new AnalysisResult();
-            UpdateStatus("Analysing directory:", path);
+            UpdateStatus("Analysing directory:", path, options);
             
             analysisResult.Path = path;
             foreach (var item in Directory.EnumerateFiles(path))
             {
                 analysisResult.TotalFileCount++;
                 var analysis = AnalyseFile(item, options);
-                if (!analysis.Scanned)
-                {
-                    analysisResult.IgnoredFileCount++;
-                    continue;
-                }
                 analysisResult.Add(analysis);
             }
 
-            foreach (var item in Directory.EnumerateDirectories(path))
+            if (options.Recurse)
             {
-                if (!options.ShouldScanDirectory(item))
+                foreach (var item in Directory.EnumerateDirectories(path))
                 {
-                    UpdateStatus("Skipping directory:", item);
-                    continue;
+                    if (!options.ShouldScanDirectory(item))
+                    {
+                        UpdateStatus("Skipping directory:", item, options);
+                        continue;
+                    }
+                    var directoryAnalysis = AnalyseDirectory(item, options);
+                    analysisResult.Merge(directoryAnalysis);
                 }
-                var directoryAnalysis = AnalyseDirectory(item, options);
-                analysisResult.Merge(directoryAnalysis);
             }
 
             return analysisResult;
@@ -73,12 +71,12 @@ namespace locr.lib
             var result = new AnalysisFileResult();
             if (!options.ShouldScanFile(filePath))
             {
-                UpdateStatus("Skipping file:", filePath);
+                UpdateStatus("Skipping file:", filePath, options);
                 result.Scanned = false; // marked as skipped file
                 return result;
             }
 
-            UpdateStatus("Analysing file:", filePath);
+            UpdateStatus("Analysing file:", filePath, options);
             
             result.Extension = Path.GetExtension(filePath) ?? "";
             result.Extension = result.Extension.ToLowerInvariant();
@@ -121,11 +119,11 @@ namespace locr.lib
             return result;
         }
 
-        private void UpdateStatus(string prefix, string message)
+        private void UpdateStatus(string prefix, string message, AnalysisOptions options)
         {
             if (OnStatusUpdate == null) return;
 
-            OnStatusUpdate(this, new AnalysisEventArgs(){Message = message, Prefix = prefix});
+            OnStatusUpdate(this, new AnalysisEventArgs(){Message = message, Prefix = prefix, Options = options});
         }
     }
 }

@@ -26,8 +26,11 @@ namespace locr.lib
         [CliParse.ParsableArgument('d', "matchdir", Description = "Only directories matched by the supplied regular expression will be scanned")]
         public string DirectoryMatch { get; set; }
 
-        [CliParse.ParsableArgument('q', "quiet", DefaultValue = false, Description = "Less chatty output.")]
-        public bool Quiet { get; set; }
+        [CliParse.ParsableArgument('v', "verbosity", DefaultValue = 0, Description = "Output verbosity level. 0=None, 1=Chatty Neighbor, 2=Gossip Columnist.  Default is 0.")]
+        public int Verbosity { get; set; }
+        
+        [CliParse.ParsableArgument('r', "recurse", DefaultValue = false, Description = "Recurse subfolders contained in provided path.")]
+        public bool Recurse { get; set; }
 
 
         public Dictionary<string, AnalysisFileResult> Sort(Dictionary<string, AnalysisFileResult> sortable)
@@ -37,7 +40,7 @@ namespace locr.lib
 
         public static string WildcardToRegex(string pattern)
         {
-            return "^" + pattern.Replace("*",".*") + "$";
+            return pattern.Replace("*",".*");
         }
 
         public bool ShouldScanDirectory(string directoryPath)
@@ -57,13 +60,13 @@ namespace locr.lib
             var filename = System.IO.Path.GetFileName(filePath);
             if (string.IsNullOrEmpty(filename)) return true;
 
-            if (!string.IsNullOrEmpty(FileMatch) && Regex.IsMatch(filename, FileMatch))
-                return true;
+            if (!string.IsNullOrEmpty(FileMatch) && !Regex.IsMatch(filename, FileMatch))
+                return false;
 
-            if (!string.IsNullOrEmpty(FileInclude) && Regex.IsMatch(filename, FileInclude))
-                return true;
+            if (!string.IsNullOrEmpty(FileInclude) && !Regex.IsMatch(filename, FileInclude))
+                return false;
 
-            return false;
+            return true;
         }
     }
 }

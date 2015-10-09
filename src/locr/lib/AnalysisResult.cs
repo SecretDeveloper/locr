@@ -35,41 +35,46 @@ namespace locr.lib
             this.BinaryFileCount = 0;
         }
 
-        public void Add(AnalysisFileResult fileResult)
-        {
-            if(fileResult == null) throw new ArgumentNullException("fileResult");
-            if (fileResult.Scanned)
-            {
-                if (FileResults.ContainsKey(fileResult.Extension))
-                {
-                    var result = FileResults[fileResult.Extension];
-                    result.Merge(fileResult);
-                    result.FileCount++; // increment number of files for this extension.
-                }
-                else
-                    FileResults[fileResult.Extension] = (fileResult);
-
-                if (!fileResult.IsText) this.BinaryFileCount++;
-
-                this.TotalLines += fileResult.Lines;
-                this.TotalBytes += fileResult.Bytes;
-                this.TotalBlanks += fileResult.Blanks;
-            }
-            else
-            {
-                this.IgnoredFileCount++;
-            }
-        }
-
         public void Merge(AnalysisResult analyseDirectory)
         {
             this.TotalDirectoryCount++;
             this.TotalDirectoryCount += analyseDirectory.TotalDirectoryCount;
+            this.IgnoredFileCount += analyseDirectory.IgnoredFileCount;
             this.TotalFileCount += analyseDirectory.TotalFileCount;
+            this.BinaryFileCount += this.BinaryFileCount;
+            
             foreach (var fileResult in analyseDirectory.FileResults.Values)
             {
                 Add(fileResult);
             }
+        }
+
+        public void Add(AnalysisFileResult fileResult)
+        {
+            if (fileResult == null) throw new ArgumentNullException("fileResult");
+
+            this.TotalFileCount++;
+
+            if (!fileResult.Scanned)
+            {
+                this.IgnoredFileCount++;
+                return;
+            }
+
+            if (FileResults.ContainsKey(fileResult.Extension))
+            {
+                var result = FileResults[fileResult.Extension];
+                result.Merge(fileResult);
+                result.FileCount++; // increment number of files for this extension.
+            }
+            else
+                FileResults[fileResult.Extension] = (fileResult);
+
+            if (!fileResult.IsText) this.BinaryFileCount++;
+
+            this.TotalLines += fileResult.Lines;
+            this.TotalBytes += fileResult.Bytes;
+            this.TotalBlanks += fileResult.Blanks;
         }
 
         public static string PadToLength(string value, int totalLength, char padChar = ' ', bool padLeft = false)
@@ -109,7 +114,13 @@ namespace locr.lib
 
             var dirdetails = "Scanning: " + this.Path;
 
-            message = message.Replace("{dirdetails}", string.Format("Scanning: " + this.Path + "\nDirectories:{1}\nScanned Files:{0}\nIgnoredFiles:{2}", this.TotalFileCount, this.TotalDirectoryCount, this.IgnoredFileCount));
+            message = message.Replace("{dirdetails}",
+                string.Format(
+                    "Scanning: " + this.Path + "\nDirectories:{0}\nFiles:{1} (Scanned:{2}, Ignored:{3})",
+                    this.TotalDirectoryCount,
+                    this.TotalFileCount,
+                    (this.TotalFileCount - this.IgnoredFileCount),
+                    this.IgnoredFileCount));
 
             message = message.Replace("{tableheader}"
                 , PadToLength("Extension", padTotalWidth)
@@ -118,11 +129,11 @@ namespace locr.lib
                   + PadToLength("Blanks", padTotalWidth) 
                   + PadToLength("Bytes", padTotalWidth));
 
-            decimal filesPerSecond = (Convert.ToDecimal(TotalFileCount) / Convert.ToDecimal(ElapsedMilliseconds)) * 1000M;
+            decimal filesPerSecond = (Convert.ToDecimal(TotalFileCount-IgnoredFileCount) / Convert.ToDecimal(ElapsedMilliseconds)) * 1000M;
             filesPerSecond = Math.Floor(filesPerSecond);
 
             message = message.Replace("{perf}",
-                String.Format("{0} files scanned in {1}ms, ({2} files/sec)", TotalFileCount, ElapsedMilliseconds, filesPerSecond));
+                String.Format("{0} files scanned in {1}ms, ({2} files/sec)", TotalFileCount-IgnoredFileCount, ElapsedMilliseconds, filesPerSecond));
             
             var sb = new StringBuilder();
             Dictionary<string, AnalysisFileResult> sortedList = this.AnalysisOptions.Sort(FileResults);

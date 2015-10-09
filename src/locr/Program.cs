@@ -30,7 +30,7 @@ namespace locr
 
                 var analysis = new lib.locr();
 
-                if(!options.Quiet)
+                if(options.Verbosity>0)
                     analysis.OnStatusUpdate += analysis_OnStatusUpdate;
 
                 var screen = analysis.Analyse(options);
@@ -54,8 +54,14 @@ namespace locr
             
             const int maxLength = 100;
             var message = GetMessage(args.Prefix, args.Message, maxLength);
-            
-            Console.Write("\r"+message);
+
+            var verbosity = args.Options.Verbosity;
+
+            if(verbosity>1)
+                Console.WriteLine(message);
+            else if(verbosity>0)
+                Console.Write("\r"+message);
+                
         }
 
         private static string GetMessage(string prefix, string message, int length)
