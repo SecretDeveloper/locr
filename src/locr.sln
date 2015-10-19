@@ -5,10 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "locr", "locr\locr.csproj", "{65941423-F3C8-40C6-BB8E-57F7CD04416F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2DD6818A-30C0-4397-96DA-7C69EA43FA09}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "locr.tests", "locr.tests\locr.tests.csproj", "{B3E187F5-37B7-436B-93E2-3AD277EDE2A8}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,10 +15,6 @@ Global
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3E187F5-37B7-436B-93E2-3AD277EDE2A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3E187F5-37B7-436B-93E2-3AD277EDE2A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3E187F5-37B7-436B-93E2-3AD277EDE2A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3E187F5-37B7-436B-93E2-3AD277EDE2A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
