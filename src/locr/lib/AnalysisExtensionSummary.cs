@@ -3,7 +3,7 @@
     /// <summary>
     /// Single file analysis results.
     /// </summary>
-    public class AnalysisFileResult
+    public class AnalysisExtensionSummary
     {
         public string Extension { get; set; }
         public long Bytes { get; set; }
@@ -14,7 +14,7 @@
 
         public int FileCount { get; set; }
 
-        public AnalysisFileResult()
+        public AnalysisExtensionSummary()
         {
             Extension = "";
             Lines = 0;
@@ -36,10 +36,11 @@
                 , AnalysisResult.PadToLength(this.Bytes.ToString("N0"), padding));
         }
 
-        public void Merge(AnalysisFileResult right)
+        public void Merge(AnalysisExtensionSummary right)
         {
             if (right.Scanned)
             {
+                this.FileCount += right.FileCount;
                 this.Bytes += right.Bytes;
                 this.Lines += right.Lines;
                 this.Blanks += right.Blanks;

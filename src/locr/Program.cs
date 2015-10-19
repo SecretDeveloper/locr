@@ -6,7 +6,7 @@ using locr.lib;
 
 namespace locr
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -15,36 +15,41 @@ namespace locr
 #if DEBUG
                 Debugger.Launch();
 #endif
+                Execute(args);
 
-                var options = new AnalysisOptions();
-                var result = options.CliParse(args);
-                if (result.Successful == false || result.ShowHelp)
-                {
-                    foreach (var message in result.CliParseMessages)
-                    {
-                        Console.WriteLine(message);
-                    }
-                    Console.WriteLine(options.GetHelpInfo());
-                    return;
-                }
-
-                var analysis = new lib.locr();
-
-                if(options.Verbosity>0)
-                    analysis.OnStatusUpdate += analysis_OnStatusUpdate;
-
-                var screen = analysis.Analyse(options);
-
-                // reset screen update line
-                Console.Write("\r                                                                                                       ");
-                Console.Write("\r");
-
-                Console.WriteLine(screen);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public static void Execute(string[] args)
+        {
+            var options = new AnalysisOptions();
+            var result = options.CliParse(args);
+            if (result.Successful == false || result.ShowHelp)
+            {
+                foreach (var message in result.CliParseMessages)
+                {
+                    Console.WriteLine(message);
+                }
+                Console.WriteLine(options.GetHelpInfo());
+                return;
+            }
+
+            var analysis = new lib.locr();
+
+            if (options.Verbosity > 0)
+                analysis.OnStatusUpdate += analysis_OnStatusUpdate;
+
+            var screen = analysis.Analyse(options);
+
+            // reset screen update line
+            Console.Write("\r                                                                                                       ");
+            Console.Write("\r");
+
+            Console.WriteLine(screen);
         }
 
         static void analysis_OnStatusUpdate(object sender, EventArgs e)

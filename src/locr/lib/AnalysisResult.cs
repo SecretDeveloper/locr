@@ -22,7 +22,7 @@ namespace locr.lib
 
         public AnalysisOptions AnalysisOptions { get; set; }
 
-        public Dictionary<string, AnalysisFileResult> FileResults = new Dictionary<string, AnalysisFileResult>();
+        public Dictionary<string, AnalysisExtensionSummary> FileResults = new Dictionary<string, AnalysisExtensionSummary>();
 
         public AnalysisResult()
         {
@@ -41,40 +41,47 @@ namespace locr.lib
             this.TotalDirectoryCount += analyseDirectory.TotalDirectoryCount;
             this.IgnoredFileCount += analyseDirectory.IgnoredFileCount;
             this.TotalFileCount += analyseDirectory.TotalFileCount;
-            this.BinaryFileCount += this.BinaryFileCount;
+            this.BinaryFileCount += analyseDirectory.BinaryFileCount;
             
             foreach (var fileResult in analyseDirectory.FileResults.Values)
             {
-                Add(fileResult);
+                UpdateStats(fileResult);
             }
         }
 
-        public void Add(AnalysisFileResult fileResult)
+
+        public void Add(AnalysisExtensionSummary extensionSummary)
         {
-            if (fileResult == null) throw new ArgumentNullException("fileResult");
+            if (extensionSummary == null) throw new ArgumentNullException("extensionSummary");
 
             this.TotalFileCount++;
 
-            if (!fileResult.Scanned)
+            if (!extensionSummary.Scanned)
             {
                 this.IgnoredFileCount++;
                 return;
             }
 
-            if (FileResults.ContainsKey(fileResult.Extension))
+            UpdateStats(extensionSummary);
+        }
+
+        public void UpdateStats(AnalysisExtensionSummary extensionSummary)
+        {
+            if (extensionSummary == null) throw new ArgumentNullException("extensionSummary");
+            
+            if (FileResults.ContainsKey(extensionSummary.Extension))
             {
-                var result = FileResults[fileResult.Extension];
-                result.Merge(fileResult);
-                result.FileCount++; // increment number of files for this extension.
+                var result = FileResults[extensionSummary.Extension];
+                result.Merge(extensionSummary);
             }
             else
-                FileResults[fileResult.Extension] = (fileResult);
+                FileResults[extensionSummary.Extension] = (extensionSummary);
 
-            if (!fileResult.IsText) this.BinaryFileCount++;
+            if (!extensionSummary.IsText) this.BinaryFileCount++;
 
-            this.TotalLines += fileResult.Lines;
-            this.TotalBytes += fileResult.Bytes;
-            this.TotalBlanks += fileResult.Blanks;
+            this.TotalLines += extensionSummary.Lines;
+            this.TotalBytes += extensionSummary.Bytes;
+            this.TotalBlanks += extensionSummary.Blanks;
         }
 
         public static string PadToLength(string value, int totalLength, char padChar = ' ', bool padLeft = false)
@@ -136,7 +143,7 @@ namespace locr.lib
                 String.Format("{0} files scanned in {1}ms, ({2} files/sec)", TotalFileCount-IgnoredFileCount, ElapsedMilliseconds, filesPerSecond));
             
             var sb = new StringBuilder();
-            Dictionary<string, AnalysisFileResult> sortedList = this.AnalysisOptions.Sort(FileResults);
+            Dictionary<string, AnalysisExtensionSummary> sortedList = this.AnalysisOptions.Sort(FileResults);
             foreach (var key in sortedList.Keys)
             {
                 sb.AppendLine(FileResults[key].ToString());

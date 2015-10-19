@@ -44,7 +44,6 @@ namespace locr.lib
             analysisResult.Path = path;
             foreach (var item in Directory.EnumerateFiles(path))
             {
-                analysisResult.TotalFileCount++;
                 var analysis = AnalyseFile(item, options);
                 analysisResult.Add(analysis);
             }
@@ -66,9 +65,9 @@ namespace locr.lib
             return analysisResult;
         }
 
-        private AnalysisFileResult AnalyseFile(string filePath, AnalysisOptions options)
+        private AnalysisExtensionSummary AnalyseFile(string filePath, AnalysisOptions options)
         {
-            var result = new AnalysisFileResult();
+            var result = new AnalysisExtensionSummary();
             if (!options.ShouldScanFile(filePath))
             {
                 UpdateStatus("Skipping file:", filePath, options);

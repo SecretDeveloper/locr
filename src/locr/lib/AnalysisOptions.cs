@@ -33,7 +33,7 @@ namespace locr.lib
         public bool Recurse { get; set; }
 
 
-        public Dictionary<string, AnalysisFileResult> Sort(Dictionary<string, AnalysisFileResult> sortable)
+        public Dictionary<string, AnalysisExtensionSummary> Sort(Dictionary<string, AnalysisExtensionSummary> sortable)
         {
             return sortable.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
         }

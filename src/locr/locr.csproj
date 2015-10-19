@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalysisEventArgs.cs" />
-    <Compile Include="lib\AnalysisFileResult.cs" />
+    <Compile Include="lib\AnalysisExtensionSummary.cs" />
     <Compile Include="lib\AnalysisOptions.cs" />
     <Compile Include="lib\AnalysisResult.cs" />
     <Compile Include="lib\locr.cs" />
