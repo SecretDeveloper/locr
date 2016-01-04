@@ -8,48 +8,48 @@ namespace locr
 {
     public class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            try
-            {
 #if DEBUG
-                Debugger.Launch();
+            Debugger.Launch();
 #endif
-                Execute(args);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            Execute(args);
         }
 
         public static void Execute(string[] args)
         {
             var options = new AnalysisOptions();
-            var result = options.CliParse(args);
-            if (result.Successful == false || result.ShowHelp)
+            try
             {
-                foreach (var message in result.CliParseMessages)
+                var result = options.CliParse(args);
+                if (result.Successful == false || result.ShowHelp)
                 {
-                    Console.WriteLine(message);
+                    foreach (var message in result.CliParseMessages)
+                    {
+                        Console.WriteLine(message);
+                    }
+                    Console.WriteLine(options.GetHelpInfo());
+                    return;
                 }
-                Console.WriteLine(options.GetHelpInfo());
-                return;
+
+                var analysis = new lib.locr();
+
+                if (options.Verbosity > 0)
+                    analysis.OnStatusUpdate += analysis_OnStatusUpdate;
+
+                var screen = analysis.Analyse(options);
+
+                // reset screen update line
+                Console.Write("\r                                                                                                       ");
+                Console.Write("\r");
+
+                Console.WriteLine(screen);
             }
-
-            var analysis = new lib.locr();
-
-            if (options.Verbosity > 0)
-                analysis.OnStatusUpdate += analysis_OnStatusUpdate;
-
-            var screen = analysis.Analyse(options);
-
-            // reset screen update line
-            Console.Write("\r                                                                                                       ");
-            Console.Write("\r");
-
-            Console.WriteLine(screen);
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(options.GetHelpInfo());
+            }
         }
 
         static void analysis_OnStatusUpdate(object sender, EventArgs e)

@@ -2,35 +2,43 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using CliParse;
 
 namespace locr.lib
 {
     [CliParse.ParsableClass("locr", "Utility for counting the number of lines conained in a file or directory of files.")]
     public class AnalysisOptions:CliParse.Parsable
     {
-        [CliParse.ParsableArgument('p', "path", Required = true)]
+        [CliParse.ParsableArgument("path", ShortName = 'p', ImpliedPosition = 0)]
         public string Path { get; set; }
 
-        [CliParse.ParsableArgument('m', "match", DefaultValue = "", Description = "Only files matched by the supplied regular expression will be scanned")]
+        [CliParse.ParsableArgument("match", ShortName = 'm', DefaultValue = "", Description = "Only files matched by the supplied regular expression will be scanned")]
         public string FileMatch { get; set; }
 
-        private string fileInclude;
-        [CliParse.ParsableArgument('i', "include", DefaultValue = "", Description = "Only files include files that pass wildcard search e.g. *.cs")]
+        private string _fileInclude;
+        [CliParse.ParsableArgument("include", ShortName = 'i', DefaultValue = "", Description = "Only files include files that pass wildcard search e.g. *.cs")]
         public string FileInclude
         {
-            get { return fileInclude; }
-            set { fileInclude = WildcardToRegex(value); }
+            get { return _fileInclude; }
+            set { _fileInclude = WildcardToRegex(value); }
         }
 
-        [CliParse.ParsableArgument('d', "matchdir", Description = "Only directories matched by the supplied regular expression will be scanned")]
+        [CliParse.ParsableArgument("matchdir", ShortName = 'd', Description = "Only directories matched by the supplied regular expression will be scanned")]
         public string DirectoryMatch { get; set; }
 
-        [CliParse.ParsableArgument('v', "verbosity", DefaultValue = 0, Description = "Output verbosity level. 0=None, 1=Chatty Neighbor, 2=Gossip Columnist.  Default is 0.")]
+        [CliParse.ParsableArgument("verbosity", ShortName = 'v', DefaultValue = 0, Description = "Output verbosity level. 0=None, 1=Chatty Neighbor, 2=Gossip Columnist.  Default is 0.")]
         public int Verbosity { get; set; }
-        
-        [CliParse.ParsableArgument('r', "recurse", DefaultValue = false, Description = "Recurse subfolders contained in provided path.")]
+
+        [CliParse.ParsableArgument("recurse", ShortName = 'r', DefaultValue = false, Description = "Recurse subfolders contained in provided path.")]
         public bool Recurse { get; set; }
+
+        public override void PreParse(IEnumerable<string> args, CliParseResult result)
+        {
+            base.PreParse(args, result);
+            Path = Environment.CurrentDirectory;
+        }
 
 
         public Dictionary<string, AnalysisExtensionSummary> Sort(Dictionary<string, AnalysisExtensionSummary> sortable)

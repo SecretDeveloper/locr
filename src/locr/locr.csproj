@@ -36,9 +36,9 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CliParse, Version=0.1.19.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="CliParse, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CliParse.0.1.19.0\lib\CliParse.dll</HintPath>
+      <HintPath>..\packages\CliParse.0.2.1.0\lib\CliParse.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
