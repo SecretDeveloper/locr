@@ -1,4 +1,6 @@
-﻿namespace locr.lib
+﻿using System.CodeDom;
+
+namespace locr.lib
 {
     /// <summary>
     /// Single file analysis results.
@@ -8,7 +10,8 @@
         public string Extension { get; set; }
         public long Bytes { get; set; }
         public int Lines { get; set; }
-        public int Blanks { get; set; }
+        public int LinesOfCode { get; set; }
+        
         public bool IsText { get; set; }
         public bool Scanned { get; set; }
 
@@ -18,13 +21,13 @@
         {
             Extension = "";
             Lines = 0;
-            Blanks = 0;
+            LinesOfCode = 0;
             IsText = true;
             Scanned = true;
 
             FileCount = 1;
         }
-
+        
         public override string ToString()
         {
             var padding = 20;
@@ -32,7 +35,7 @@
                 , AnalysisResult.PadToLength(this.Extension, 20)
                 , AnalysisResult.PadToLength(this.FileCount.ToString("N0"), padding)
                 , AnalysisResult.PadToLength(this.Lines.ToString("N0"), padding) 
-                , AnalysisResult.PadToLength(this.Blanks.ToString("N0"), padding)
+                , AnalysisResult.PadToLength(this.LinesOfCode.ToString("N0"), padding)
                 , AnalysisResult.PadToLength(this.Bytes.ToString("N0"), padding));
         }
 
@@ -43,7 +46,7 @@
                 this.FileCount += right.FileCount;
                 this.Bytes += right.Bytes;
                 this.Lines += right.Lines;
-                this.Blanks += right.Blanks;
+                this.LinesOfCode += right.LinesOfCode;
             }
         }
     }

@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "locr", "locr\locr.csproj", "{65941423-F3C8-40C6-BB8E-57F7CD04416F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "locr.test", "locr.test\locr.test.csproj", "{77BC034A-8874-4691-8E01-6F73457EBB1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65941423-F3C8-40C6-BB8E-57F7CD04416F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77BC034A-8874-4691-8E01-6F73457EBB1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77BC034A-8874-4691-8E01-6F73457EBB1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77BC034A-8874-4691-8E01-6F73457EBB1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77BC034A-8874-4691-8E01-6F73457EBB1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

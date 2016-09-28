@@ -6,7 +6,7 @@ using locr.lib;
 
 namespace locr
 {
-    public class Program
+    public static class Program
     {
         private static void Main(string[] args)
         {
@@ -16,7 +16,7 @@ namespace locr
             Execute(args);
         }
 
-        public static void Execute(string[] args)
+        private static void Execute(string[] args)
         {
             var options = new AnalysisOptions();
             try

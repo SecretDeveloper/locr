@@ -9,39 +9,39 @@ namespace locr.lib
     {
         public string Path { get; set; }
         public long ElapsedMilliseconds { get; set; }
-        
-        public int TotalFileCount { get; set; }
-        public int TotalDirectoryCount { get; set; }
 
-        public int IgnoredFileCount { get; set; }
-        public int BinaryFileCount { get; set; }
+        private int TotalFileCount { get; set; }
+        private int TotalDirectoryCount { get; set; }
 
-        public long TotalBytes { get; set; }
-        public int TotalLines { get; set; }
-        public int TotalBlanks { get; set; }
+        private int IgnoredFileCount { get; set; }
+        private int BinaryFileCount { get; set; }
 
-        public AnalysisOptions AnalysisOptions { get; set; }
+        private long TotalBytes { get; set; }
+        private int TotalLines { get; set; }
+        private int TotalLinesOfCode { get; set; }
 
-        public Dictionary<string, AnalysisExtensionSummary> FileResults = new Dictionary<string, AnalysisExtensionSummary>();
+        private AnalysisOptions AnalysisOptions { get; set; }
+
+        private readonly Dictionary<string, AnalysisExtensionSummary> FileResults = new Dictionary<string, AnalysisExtensionSummary>();
 
         public AnalysisResult()
         {
-            this.AnalysisOptions = new AnalysisOptions();
-            this.Path = "";
-            this.ElapsedMilliseconds = 0L;
-            this.TotalFileCount = 0;
-            this.TotalDirectoryCount = 0;
-            this.IgnoredFileCount = 0;
-            this.BinaryFileCount = 0;
+            AnalysisOptions = new AnalysisOptions();
+            Path = "";
+            ElapsedMilliseconds = 0L;
+            TotalFileCount = 0;
+            TotalDirectoryCount = 0;
+            IgnoredFileCount = 0;
+            BinaryFileCount = 0;
         }
 
         public void Merge(AnalysisResult analyseDirectory)
         {
-            this.TotalDirectoryCount++;
-            this.TotalDirectoryCount += analyseDirectory.TotalDirectoryCount;
-            this.IgnoredFileCount += analyseDirectory.IgnoredFileCount;
-            this.TotalFileCount += analyseDirectory.TotalFileCount;
-            this.BinaryFileCount += analyseDirectory.BinaryFileCount;
+            TotalDirectoryCount++;
+            TotalDirectoryCount += analyseDirectory.TotalDirectoryCount;
+            IgnoredFileCount += analyseDirectory.IgnoredFileCount;
+            TotalFileCount += analyseDirectory.TotalFileCount;
+            BinaryFileCount += analyseDirectory.BinaryFileCount;
             
             foreach (var fileResult in analyseDirectory.FileResults.Values)
             {
@@ -54,18 +54,18 @@ namespace locr.lib
         {
             if (extensionSummary == null) throw new ArgumentNullException("extensionSummary");
 
-            this.TotalFileCount++;
+            TotalFileCount++;
 
             if (!extensionSummary.Scanned)
             {
-                this.IgnoredFileCount++;
+                IgnoredFileCount++;
                 return;
             }
 
             UpdateStats(extensionSummary);
         }
 
-        public void UpdateStats(AnalysisExtensionSummary extensionSummary)
+        private void UpdateStats(AnalysisExtensionSummary extensionSummary)
         {
             if (extensionSummary == null) throw new ArgumentNullException("extensionSummary");
             
@@ -77,11 +77,11 @@ namespace locr.lib
             else
                 FileResults[extensionSummary.Extension] = (extensionSummary);
 
-            if (!extensionSummary.IsText) this.BinaryFileCount++;
+            if (!extensionSummary.IsText) BinaryFileCount++;
 
-            this.TotalLines += extensionSummary.Lines;
-            this.TotalBytes += extensionSummary.Bytes;
-            this.TotalBlanks += extensionSummary.Blanks;
+            TotalLines += extensionSummary.Lines;
+            TotalBytes += extensionSummary.Bytes;
+            TotalLinesOfCode += extensionSummary.LinesOfCode;
         }
 
         public static string PadToLength(string value, int totalLength, char padChar = ' ', bool padLeft = false)
@@ -102,15 +102,15 @@ namespace locr.lib
         public override string ToString()
         {
             const string template = @"locr {version}
----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 {dirdetails}
 {perf}
----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 {tableheader}
 {table}
----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 {summary}
----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 ";
 
             const int padTotalWidth = 20;
@@ -119,31 +119,29 @@ namespace locr.lib
 
             message = message.Replace("{version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-            var dirdetails = "Scanning: " + this.Path;
-
             message = message.Replace("{dirdetails}",
                 string.Format(
-                    "Scanning: " + this.Path + "\nDirectories:{0}\nFiles:{1} (Scanned:{2}, Ignored:{3})",
-                    this.TotalDirectoryCount,
-                    this.TotalFileCount,
-                    (this.TotalFileCount - this.IgnoredFileCount),
-                    this.IgnoredFileCount));
+                    "Scanning: " + Path + "\nDirectories:{0}\nFiles:{1} (Scanned:{2}, Ignored:{3})",
+                    TotalDirectoryCount,
+                    TotalFileCount,
+                    (TotalFileCount - IgnoredFileCount),
+                    IgnoredFileCount));
 
             message = message.Replace("{tableheader}"
                 , PadToLength("Extension", padTotalWidth)
                   + PadToLength("Files", padTotalWidth) 
                   + PadToLength("Lines", padTotalWidth) 
-                  + PadToLength("Blanks", padTotalWidth) 
+                  + PadToLength("LOC", padTotalWidth)
                   + PadToLength("Bytes", padTotalWidth));
 
-            decimal filesPerSecond = (Convert.ToDecimal(TotalFileCount-IgnoredFileCount) / Convert.ToDecimal(ElapsedMilliseconds)) * 1000M;
+            var filesPerSecond = (Convert.ToDecimal(TotalFileCount-IgnoredFileCount) / Convert.ToDecimal(ElapsedMilliseconds)) * 1000M;
             filesPerSecond = Math.Floor(filesPerSecond);
 
             message = message.Replace("{perf}",
-                String.Format("{0} files scanned in {1}ms, ({2} files/sec)", TotalFileCount-IgnoredFileCount, ElapsedMilliseconds, filesPerSecond));
+                string.Format("{0} files scanned in {1}ms, ({2} files/sec)", TotalFileCount-IgnoredFileCount, ElapsedMilliseconds, filesPerSecond));
             
             var sb = new StringBuilder();
-            Dictionary<string, AnalysisExtensionSummary> sortedList = this.AnalysisOptions.Sort(FileResults);
+            var sortedList = AnalysisOptions.Sort(FileResults);
             foreach (var key in sortedList.Keys)
             {
                 sb.AppendLine(FileResults[key].ToString());
@@ -151,12 +149,12 @@ namespace locr.lib
             var table = "";
             if (sb.Length > 0) table = sb.ToString().Substring(0, sb.Length - 1);
             message = message.Replace("{table}", table);
-            
-            message = message.Replace("{summary}", String.Format("{0}{1}{2}{3}{4}"
+
+            message = message.Replace("{summary}", string.Format("{0}{1}{2}{3}{4}"
                 , PadToLength("Total:", padTotalWidth)
                 , PadToLength(TotalFileCount.ToString("N0"), padTotalWidth)
                 , PadToLength(TotalLines.ToString("N0"), padTotalWidth)
-                , PadToLength(TotalBlanks.ToString("N0"), padTotalWidth)
+                , PadToLength(TotalLinesOfCode.ToString("N0"), padTotalWidth)
                 , PadToLength(TotalBytes.ToString("N0"), padTotalWidth)));
 
             return message;

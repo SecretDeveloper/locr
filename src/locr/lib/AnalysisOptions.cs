@@ -8,10 +8,10 @@ using CliParse;
 
 namespace locr.lib
 {
-    [CliParse.ParsableClass("locr", "Utility for counting the number of lines conained in a file or directory of files.")]
+    [CliParse.ParsableClass("locr", "Utility for counting the number of lines of text in files and folders.")]
     public class AnalysisOptions:CliParse.Parsable
     {
-        [CliParse.ParsableArgument("path", ShortName = 'p', ImpliedPosition = 0)]
+        [CliParse.ParsableArgument("path", ShortName = 'p', ImpliedPosition = 1)]
         public string Path { get; set; }
 
         [CliParse.ParsableArgument("match", ShortName = 'm', DefaultValue = "", Description = "Only files matched by the supplied regular expression will be scanned")]
@@ -56,9 +56,7 @@ namespace locr.lib
             if (string.IsNullOrEmpty(DirectoryMatch)) return true;
 
             var directoryName = System.IO.Path.GetDirectoryName(directoryPath);
-            if (string.IsNullOrEmpty(directoryName)) return true;
-
-            return Regex.IsMatch(directoryName, DirectoryMatch);
+            return string.IsNullOrEmpty(directoryName) || Regex.IsMatch(directoryName, DirectoryMatch);
         }
 
         public bool ShouldScanFile(string filePath)
@@ -71,10 +69,7 @@ namespace locr.lib
             if (!string.IsNullOrEmpty(FileMatch) && !Regex.IsMatch(filename, FileMatch))
                 return false;
 
-            if (!string.IsNullOrEmpty(FileInclude) && !Regex.IsMatch(filename, FileInclude))
-                return false;
-
-            return true;
+            return string.IsNullOrEmpty(FileInclude) || Regex.IsMatch(filename, FileInclude);
         }
     }
 }
